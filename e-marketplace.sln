@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataAccess", "DataAccess\Da
 EndProject
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "AnnouncementsDB", "AnnouncementsDB\AnnouncementsDB.sqlproj", "{3BD0834F-42E1-4212-A7F9-B18B0AC7A849}"
 EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{18703051-C8BC-48F6-B107-79319CDE02FE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,10 @@ Global
 		{3BD0834F-42E1-4212-A7F9-B18B0AC7A849}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3BD0834F-42E1-4212-A7F9-B18B0AC7A849}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3BD0834F-42E1-4212-A7F9-B18B0AC7A849}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{18703051-C8BC-48F6-B107-79319CDE02FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18703051-C8BC-48F6-B107-79319CDE02FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18703051-C8BC-48F6-B107-79319CDE02FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18703051-C8BC-48F6-B107-79319CDE02FE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

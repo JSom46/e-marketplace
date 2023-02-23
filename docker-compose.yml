@@ -1,0 +1,32 @@
+version: '3.4'
+
+services:
+  authentication:
+    image: ${DOCKER_REGISTRY-}authentication
+    build:
+      context: .
+      dockerfile: Authentication/Dockerfile
+    ports:
+        - "5000:80"
+        - "5001:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+
+  announcements:
+    image: ${DOCKER_REGISTRY-}announcements
+    build:
+      context: .
+      dockerfile: Announcements/Dockerfile
+    ports:
+        - "6000:80"
+        - "6001:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
