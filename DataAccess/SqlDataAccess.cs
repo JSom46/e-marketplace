@@ -20,7 +20,7 @@ namespace DataAccess
             string connectionId = "Default")
         {
             using IDbConnection con = new SqlConnection(_config.GetConnectionString(connectionId));
-            Console.WriteLine(_config.GetConnectionString(connectionId));
+
             return await con.QueryAsync<U>(
                 storedProcedure,
                 parameters,
@@ -33,7 +33,7 @@ namespace DataAccess
             string connectionId = "Default")
         {
             using IDbConnection con = new SqlConnection(_config.GetConnectionString(connectionId));
-            Console.WriteLine(_config.GetConnectionString(connectionId));
+
             return await con.QuerySingleOrDefaultAsync<U>(storedProcedure,
                 parameters,
                 commandType: CommandType.StoredProcedure);
@@ -45,7 +45,7 @@ namespace DataAccess
             string connectionId = "Default")
         {
             using IDbConnection con = new SqlConnection(_config.GetConnectionString(connectionId));
-            Console.WriteLine(_config.GetConnectionString(connectionId));
+
             return await con.ExecuteAsync(storedProcedure,
                 parameters,
                 commandType: CommandType.StoredProcedure);
