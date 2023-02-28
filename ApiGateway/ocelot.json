@@ -1,0 +1,79 @@
+{
+  "Routes": [
+    // authentication
+    {
+      "DownstreamPathTemplate": "/auth/login",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authentication",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/auth/login",
+      "UpstreamHttpMethod": [ "Post" ],
+
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    {
+      "DownstreamPathTemplate": "/auth/register",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authentication",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/auth/register",
+      "UpstreamHttpMethod": [ "Post" ],
+
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    // announcements
+    {
+      "DownstreamPathTemplate": "/announcement",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "announcements",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/announcement",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
+
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    {
+      "DownstreamPathTemplate": "/announcement/list",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "announcements",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/announcement/list",
+      "UpstreamHttpMethod": [ "Get" ],
+
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    {
+      "DownstreamPathTemplate": "/announcement/my",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "announcements",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/announcement/my",
+      "UpstreamHttpMethod": [ "Get" ],
+
+      "DangerousAcceptAnyServerCertificateValidator": true
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "https://localhost:7001"
+  }
+}
