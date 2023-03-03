@@ -1,0 +1,62 @@
+version: '3.4'
+
+services:
+  authentication:
+    ports:
+        - "5000:80"
+        - "5001:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=Test!Cert1810
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/marketapp.pfx
+ #     - DOTNET_USE_POLLING_FILE_WATCHER=1
+ #     - ASPNETCORE_LOGGING__CONSOLE__DISABLECOLORS=true
+ #     - NUGET_FALLBACK_PACKAGES=/root/.nuget/fallbackpackages
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+      - ${USERPROFILE}/.dotnet/https:/https/
+#      - C:\Users\Gigabubel\vsdbg\vs2017u5:/REMOTE_DEBUGGER
+#      - C:\Program Files (x86)\Microsoft Visual Studio\Shared\NuGetPackages:/ROOT/.NUGET/FALLBACKPACKAGES
+#      - C:\Users\Gigabubel\.nuget\packages\:/ROOT/.NUGET/PACKAGES
+#      - E:\projects\c#\e-marketplace:/SRC
+#      - E:\projects\c#\e-marketplace\Authentication:/APP
+    networks:
+        - test_network
+
+  announcements:
+    ports:
+        - "6000:80"
+        - "6001:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=Test!Cert1810
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/marketapp.pfx
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+      - ${USERPROFILE}/.dotnet/https:/https/
+    networks:
+        - test_network
+
+  apigateway:
+    ports:
+        - "7000:80"
+        - "7001:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=Test!Cert1810
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/marketapp.pfx
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+      - ${USERPROFILE}/.dotnet/https:/https/
+    networks:
+        - test_network
+
+networks:
+  test_network:
+    external: true

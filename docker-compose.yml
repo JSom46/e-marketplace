@@ -1,0 +1,23 @@
+version: '3.4'
+
+services:
+  authentication:
+    container_name: authentication
+    image: ${DOCKER_REGISTRY-}authentication
+    build:
+      context: .
+      dockerfile: Authentication/Dockerfile
+
+  announcements:
+    container_name: announcements
+    image: ${DOCKER_REGISTRY-}announcements
+    build:
+      context: .
+      dockerfile: Announcements/Dockerfile
+
+  apigateway:
+    container_name: apigateway
+    image: ${DOCKER_REGISTRY-}apigateway
+    build:
+      context: .
+      dockerfile: ApiGateway/Dockerfile
