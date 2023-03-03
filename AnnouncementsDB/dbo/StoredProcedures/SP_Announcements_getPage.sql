@@ -38,10 +38,10 @@ BEGIN
             [Id], 
             [AuthorId], 
             [Title], 
-            [Description], 
             [Category], 
             [CreatedDate], 
-            [ExpiresDate], 
+            [ExpiresDate],
+            [IsActive],
             [Price]
         FROM [dbo].[Announcements]
         WHERE 
@@ -53,11 +53,12 @@ BEGIN
         [Id], 
         [AuthorId], 
         [Title], 
-        [Description], 
         [Category], 
         [CreatedDate], 
         [ExpiresDate], 
-        [Price]
-    FROM Announcements
+        [IsActive],
+        [Price],
+        (SELECT TOP 1 P.[Name] FROM [dbo].[Pictures] P WHERE P.AnnouncementId = A.Id) AS PictureName
+    FROM Announcements A
     WHERE [RowNumber] BETWEEN @StartIndex AND @EndIndex;
 END

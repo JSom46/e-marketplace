@@ -69,6 +69,13 @@
     <Build Include="dbo\StoredProcedures\SP_Announcements_getByAuthorId.sql" />
     <Build Include="dbo\StoredProcedures\SP_Announcements_getPage.sql" />
     <Build Include="dbo\StoredProcedures\SP_Announcements_getPagesCount.sql" />
+    <Build Include="dbo\Tables\Pictures.sql" />
+    <Build Include="dbo\StoredProcedures\SP_Pictures_add.sql" />
+    <Build Include="dbo\StoredProcedures\SP_Pictures_delete.sql" />
+    <Build Include="dbo\StoredProcedures\SP_Pictures_getByAnnouncementId.sql" />
+    <Build Include="dbo\StoredProcedures\SP_Pictures_getById.sql" />
+    <Build Include="dbo\StoredProcedures\SP_Pictures_deleteByAnnouncementId.sql" />
+    <Build Include="dbo\StoredProcedures\SP_Pictures_deleteByName.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="AnnouncementsDB.refactorlog" />

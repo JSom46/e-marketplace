@@ -1,6 +1,6 @@
 ﻿namespace Announcements.Dtos
 {
-    public class ListAnnouncementsOptions
+    public class ListAnnouncements
     {
         public int? PageNumber { set; get; }
         public int? PageSize { set; get; }
