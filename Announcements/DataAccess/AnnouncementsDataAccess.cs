@@ -200,7 +200,7 @@ namespace Announcements.DataAccess
             }
         }
 
-        public Task<FileStream> GetPicture(string fileName)
+        public Task<FileStream?> GetPicture(string fileName)
         {
             return _fileManager.LoadFile(fileName);
         }

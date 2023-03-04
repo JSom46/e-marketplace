@@ -12,6 +12,6 @@ public interface IAnnouncementsDataAccess
     Task<Guid> Add(AnnouncementModel announcement, List<IFormFile> pictures);
     Task<int> Update(AnnouncementModel announcement, List<IFormFile> pictures);
     Task<int> Delete(Guid id);
-    Task<FileStream> GetPicture(string fileName);
+    Task<FileStream?> GetPicture(string fileName);
     Task<IEnumerable<string>> GetPicturesNames(Guid announcementId);
 }

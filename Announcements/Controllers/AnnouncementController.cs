@@ -4,6 +4,7 @@ using Announcements.Dtos;
 using Announcements.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace Announcements.Controllers
 {
@@ -49,7 +50,6 @@ namespace Announcements.Controllers
             catch (Exception ex)
             {
                 Console.Write(ex);
-                throw;
                 return StatusCode(500);
             }
         }
@@ -90,7 +90,6 @@ namespace Announcements.Controllers
             catch (Exception ex)
             {
                 Console.Write(ex);
-                throw;
                 return StatusCode(500);
             }
         }
@@ -134,7 +133,6 @@ namespace Announcements.Controllers
             catch (Exception ex)
             {
                 Console.Write(ex);
-                throw;
                 return StatusCode(500);
             }
         }
@@ -199,7 +197,6 @@ namespace Announcements.Controllers
             catch (Exception ex)
             {
                 Console.Write(ex);
-                throw;
                 return StatusCode(500);
             }
         }
@@ -277,7 +274,6 @@ namespace Announcements.Controllers
             catch (Exception ex)
             {
                 Console.Write(ex);
-                throw;
                 return StatusCode(500);
             }
         }
@@ -314,7 +310,32 @@ namespace Announcements.Controllers
             catch (Exception ex)
             {
                 Console.Write(ex);
-                throw;
+                return StatusCode(500);
+            }
+        }
+
+        [HttpGet]
+        [Route("Picture")]
+        public async Task<ActionResult> getPicture([FromQuery] string name)
+        {
+            try
+            {
+                new FileExtensionContentTypeProvider().TryGetContentType(name, out string contentType);
+                contentType ??= "application/octet-stream";
+
+                // Return the image file as a FileStreamResult
+                var fileStream = await _announcements.GetPicture(name);
+
+                if (fileStream == null)
+                {
+                    return NotFound();
+                }
+
+                return File(fileStream, contentType);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
                 return StatusCode(500);
             }
         }

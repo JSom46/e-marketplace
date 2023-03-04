@@ -24,9 +24,16 @@ namespace FileManager
             }
         }
 
-        public Task<FileStream> LoadFile(string fileName)
+        public Task<FileStream?> LoadFile(string fileName)
         {
-            return Task.FromResult(new FileStream(Path.Combine(_path, fileName), FileMode.Open, FileAccess.Read));
+            try
+            {
+                return Task.FromResult(new FileStream(Path.Combine(_path, fileName), FileMode.Open, FileAccess.Read));
+            }
+            catch (FileNotFoundException)
+            {
+                return Task.FromResult<FileStream?>(null);
+            }
         }
 
         public Task DeleteFile(string fileName)
