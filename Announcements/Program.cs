@@ -2,6 +2,7 @@ using Announcements.Configuration;
 using Announcements.DataAccess;
 using Authentication.Utils;
 using DataAccess;
+using FileManager;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,9 +14,11 @@ builder.Services.Configure<JwtBearerConfiguration>(builder.Configuration.GetSect
 
 builder.Services.AddJwtAuthentication(builder.Configuration.GetSection("JWT").Get<JwtBearerConfiguration>());
 
-builder.Services.AddSingleton<IDataAccess, SqlDataAccess>();
+builder.Services.AddTransient<IDataAccess, SqlDataAccess>();
 
-builder.Services.AddSingleton<IAnnouncementsDataAccess, AnnouncementsDataAccess>();
+builder.Services.AddTransient<IFileManager, FsFileManager>();
+
+builder.Services.AddTransient<IAnnouncementsDataAccess, AnnouncementsDataAccess>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

@@ -71,6 +71,20 @@
       "UpstreamHttpMethod": [ "Get" ],
 
       "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    {
+      "DownstreamPathTemplate": "/announcement/picture",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "announcements",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/announcement/picture",
+      "UpstreamHttpMethod": [ "Get" ],
+
+      "DangerousAcceptAnyServerCertificateValidator": true
     }
   ],
   "GlobalConfiguration": {

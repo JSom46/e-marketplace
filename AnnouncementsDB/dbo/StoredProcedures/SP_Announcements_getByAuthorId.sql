@@ -8,12 +8,12 @@ BEGIN
         [Id], 
         [AuthorId], 
         [Title], 
-        [Description], 
         [Category], 
         [CreatedDate], 
         [ExpiresDate], 
         [IsActive],
-        [Price]
-	FROM [dbo].[Announcements]
+        [Price],
+        (SELECT TOP 1 P.[Name] FROM [dbo].[Pictures] P WHERE P.AnnouncementId = A.Id) AS PictureName
+	FROM [dbo].[Announcements] A
 	WHERE [AuthorId] = @AuthorId;
 END
