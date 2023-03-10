@@ -1,10 +1,10 @@
-﻿using Authentication.Configuration;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Configuration.Models;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Authentication.Utils;
-
+namespace Configuration.Utils;
 public static class JwtAuthenticationConfigurator
 {
     public static void AddJwtAuthentication(this IServiceCollection services, JwtBearerConfiguration jwtBearerConfiguration)

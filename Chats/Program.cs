@@ -1,8 +1,9 @@
-using Announcements.DataAccess;
+using Chats.DataAccess;
+using Chats.Hubs;
 using Configuration.Models;
 using Configuration.Utils;
-using DataAccess;
 using FileManager;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,15 +11,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+builder.Services.AddSignalR();
+
 builder.Services.Configure<JwtBearerConfiguration>(builder.Configuration.GetSection("JWT"));
-
-builder.Services.AddJwtAuthentication(builder.Configuration.GetSection("JWT").Get<JwtBearerConfiguration>());
-
-builder.Services.AddTransient<IDataAccess, SqlDataAccess>();
 
 builder.Services.AddTransient<IFileManager, FsFileManager>();
 
-builder.Services.AddTransient<IAnnouncementsDataAccess, AnnouncementsDataAccess>();
+builder.Services.AddJwtAuthentication(builder.Configuration.GetSection("JWT").Get<JwtBearerConfiguration>());
+
+builder.Services.AddDbContext<ChatsContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
+});
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -40,5 +44,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<ChatHub>("/chathub");
 
 app.Run();

@@ -29,6 +29,7 @@
 
       "DangerousAcceptAnyServerCertificateValidator": true
     },
+
     // announcements
     {
       "DownstreamPathTemplate": "/announcement",
@@ -82,6 +83,80 @@
         }
       ],
       "UpstreamPathTemplate": "/announcement/picture",
+      "UpstreamHttpMethod": [ "Get" ],
+
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+
+    // chats
+    {
+      "DownstreamPathTemplate": "/chathub",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "chats",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/chathub",
+      "UpstreamHttpMethod": [ "Get", "Post" ],
+      "UseSignalR": true,
+
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    /*{
+      "DownstreamPathTemplate": "/chathub",
+      "DownstreamScheme": "wss",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "chats",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/chathub",
+      "UpstreamHttpMethod": [ "Get", "Post" ],
+      "UseSignalR": true,
+
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },*/
+    {
+      "DownstreamPathTemplate": "/chat",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "chats",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/chat",
+      "UpstreamHttpMethod": [ "Get", "Post"],
+
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    {
+      "DownstreamPathTemplate": "/chat/message",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "chats",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/chat/message",
+      "UpstreamHttpMethod": [ "Get", "Post" ],
+
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
+    {
+      "DownstreamPathTemplate": "/chat/attachment",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "chats",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/chat/attachment",
       "UpstreamHttpMethod": [ "Get" ],
 
       "DangerousAcceptAnyServerCertificateValidator": true

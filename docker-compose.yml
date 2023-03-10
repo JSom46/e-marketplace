@@ -21,3 +21,11 @@ services:
     build:
       context: .
       dockerfile: ApiGateway/Dockerfile
+
+  chats:
+    container_name: chats
+    image: ${DOCKER_REGISTRY-}chats
+    build:
+      context: .
+      dockerfile: Chats/Dockerfile
+
