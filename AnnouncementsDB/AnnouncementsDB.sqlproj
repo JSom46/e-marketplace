@@ -76,6 +76,9 @@
     <Build Include="dbo\StoredProcedures\SP_Pictures_getById.sql" />
     <Build Include="dbo\StoredProcedures\SP_Pictures_deleteByAnnouncementId.sql" />
     <Build Include="dbo\StoredProcedures\SP_Pictures_deleteByName.sql" />
+    <Build Include="dbo\Tables\Chats.sql" />
+    <Build Include="dbo\Tables\Messages.sql" />
+    <Build Include="dbo\Tables\MessageAttachments.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="AnnouncementsDB.refactorlog" />
