@@ -91,21 +91,6 @@
     // chats
     {
       "DownstreamPathTemplate": "/chathub",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "chats",
-          "Port": 443
-        }
-      ],
-      "UpstreamPathTemplate": "/chathub",
-      "UpstreamHttpMethod": [ "Get", "Post" ],
-      "UseSignalR": true,
-
-      "DangerousAcceptAnyServerCertificateValidator": true
-    },
-    /*{
-      "DownstreamPathTemplate": "/chathub",
       "DownstreamScheme": "wss",
       "DownstreamHostAndPorts": [
         {
@@ -114,11 +99,22 @@
         }
       ],
       "UpstreamPathTemplate": "/chathub",
-      "UpstreamHttpMethod": [ "Get", "Post" ],
-      "UseSignalR": true,
 
       "DangerousAcceptAnyServerCertificateValidator": true
-    },*/
+    },
+    {
+      "DownstreamPathTemplate": "/chathub/{catchall}",
+      "DownstreamScheme": "wss",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "chats",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/chathub/{catchall}",
+
+      "DangerousAcceptAnyServerCertificateValidator": true
+    },
     {
       "DownstreamPathTemplate": "/chat",
       "DownstreamScheme": "https",
@@ -129,7 +125,7 @@
         }
       ],
       "UpstreamPathTemplate": "/chat",
-      "UpstreamHttpMethod": [ "Get", "Post"],
+      "UpstreamHttpMethod": [ "Get", "Post" ],
 
       "DangerousAcceptAnyServerCertificateValidator": true
     },

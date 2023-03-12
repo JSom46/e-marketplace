@@ -19,10 +19,12 @@ builder.Services.AddTransient<IFileManager, FsFileManager>();
 
 builder.Services.AddJwtAuthentication(builder.Configuration.GetSection("JWT").Get<JwtBearerConfiguration>());
 
-builder.Services.AddDbContext<ChatsContext>(options =>
+builder.Services.AddDbContext<ChatsDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
 });
+
+builder.Services.AddTransient<IChatsDataAccess, ChatsDataAccess>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

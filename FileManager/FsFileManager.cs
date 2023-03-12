@@ -1,45 +1,44 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 
-namespace FileManager
+namespace FileManager;
+
+public class FsFileManager : IFileManager
 {
-    public class FsFileManager : IFileManager
+    private readonly IConfiguration _config;
+    private readonly string _path;
+
+    public FsFileManager(IConfiguration config)
     {
-        private readonly string _path;
-        private readonly IConfiguration _config;
+        _config = config;
+        Console.WriteLine("filemenedzer " + _config.GetSection("DefaultFilePath").Value);
+        //_path = Environment.GetEnvironmentVariable("DEFAULT_FILE_PATH") ?? "/";
+        _path = _config.GetSection("DefaultFilePath")?.Value ?? "/";
+    }
 
-        public FsFileManager(IConfiguration config)
+    public async Task SaveFile(IFormFile file, string? filename)
+    {
+        using (var stream = new FileStream(Path.Combine(_path, filename ?? file.FileName), FileMode.CreateNew))
         {
-            _config = config;
-            Console.WriteLine("filemenedzer " + _config.GetSection("DefaultFilePath").Value);
-            //_path = Environment.GetEnvironmentVariable("DEFAULT_FILE_PATH") ?? "/";
-            _path = _config.GetSection("DefaultFilePath")?.Value ?? "/";
+            await file.CopyToAsync(stream);
         }
+    }
 
-        public async Task SaveFile(IFormFile file, string? filename)
+    public Task<FileStream?> LoadFile(string fileName)
+    {
+        try
         {
-            using (var stream = new FileStream(Path.Combine(_path, filename ?? file.FileName), FileMode.CreateNew))
-            {
-                await file.CopyToAsync(stream);
-            }
+            return Task.FromResult(new FileStream(Path.Combine(_path, fileName), FileMode.Open, FileAccess.Read));
         }
+        catch (FileNotFoundException)
+        {
+            return Task.FromResult<FileStream?>(null);
+        }
+    }
 
-        public Task<FileStream?> LoadFile(string fileName)
-        {
-            try
-            {
-                return Task.FromResult(new FileStream(Path.Combine(_path, fileName), FileMode.Open, FileAccess.Read));
-            }
-            catch (FileNotFoundException)
-            {
-                return Task.FromResult<FileStream?>(null);
-            }
-        }
-
-        public Task DeleteFile(string fileName)
-        {
-            File.Delete(Path.Combine(_path, fileName));
-            return Task.CompletedTask;
-        }
+    public Task DeleteFile(string fileName)
+    {
+        File.Delete(Path.Combine(_path, fileName));
+        return Task.CompletedTask;
     }
 }

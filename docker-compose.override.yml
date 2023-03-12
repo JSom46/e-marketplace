@@ -30,7 +30,7 @@ services:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
       - ${USERPROFILE}/.dotnet/https:/https/
-      - ${APPDATA}/Announcements:/pictures
+      - ${APPDATA}/Marketplace/Announcements:/pictures
     networks:
         - test_network
 
@@ -54,16 +54,19 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=https://+:443;http://+:80
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=Test!Cert1810
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/marketapp.pfx
     ports:
       - "9000:80"
       - "9001:443"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+      - ${USERPROFILE}/.dotnet/https:/https/
+      - ${APPDATA}/Marketplace/Chats:/pictures
     networks:
       - test_network
 
 networks:
   test_network:
     external: true
-

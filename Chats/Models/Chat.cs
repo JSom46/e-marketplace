@@ -1,10 +1,10 @@
-﻿namespace Chats.Models
+﻿namespace Chats.Models;
+
+public class Chat
 {
-    public class Chat
-    {
-        public Guid Id { get; set; }
-        public Guid AnnouncementId { get; set; }
-        public string AuthorId { get; set; }
-        public List<Message> Messages { get; set; } = new List<Message>();
-    }
+    public Guid Id { get; set; }
+    public Guid AnnouncementId { get; set; }
+    public string AuthorId { get; set; } = null!;
+    public Announcement Announcement { get; set; } = null!;
+    public ICollection<Message> Messages { get; } = new List<Message>();
 }

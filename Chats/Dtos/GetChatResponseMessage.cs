@@ -1,6 +1,6 @@
 ﻿namespace Chats.Dtos;
 
-public class GetMessageResponse
+public class GetChatResponseMessage
 {
     public Guid Id { get; set; }
     public string AuthorId { get; set; }
