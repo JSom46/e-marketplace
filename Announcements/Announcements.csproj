@@ -23,4 +23,8 @@
     <ProjectReference Include="..\FileManager\FileManager.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EditorConfigFiles Remove="E:\projects\c#\e-marketplace\Announcements\.editorconfig" />
+  </ItemGroup>
+
 </Project>

@@ -1,9 +1,9 @@
-﻿namespace Chats.Dtos
+﻿namespace Chats.Dtos;
+
+public class GetChatResponse
 {
-    public class GetChatResponse
-    {
-        public Guid AnnouncementId { get; set; }
-        public string AuthorId { get; set; }
-        public IEnumerable<GetMessageResponse> Messages { get; set; }
-    }
+    public Guid Id { get; set; }
+    public Guid AnnouncementId { get; set; }
+    public string AuthorId { get; set; }
+    public IEnumerable<GetChatResponseMessage> Messages { get; set; }
 }

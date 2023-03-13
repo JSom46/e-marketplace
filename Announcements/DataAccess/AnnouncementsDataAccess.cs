@@ -3,215 +3,217 @@ using Announcements.Models;
 using DataAccess;
 using FileManager;
 
-namespace Announcements.DataAccess
+namespace Announcements.DataAccess;
+
+public class AnnouncementsDataAccess : IAnnouncementsDataAccess
 {
-    public class AnnouncementsDataAccess : IAnnouncementsDataAccess
+    private readonly IDataAccess _dataAccess;
+    private readonly IFileManager _fileManager;
+
+    public AnnouncementsDataAccess(IDataAccess dataAccess, IFileManager fileManager)
     {
-        private readonly IDataAccess _dataAccess;
-        private readonly IFileManager _fileManager;
+        _dataAccess = dataAccess;
+        _fileManager = fileManager;
+    }
 
-        public AnnouncementsDataAccess(IDataAccess dataAccess, IFileManager fileManager)
-        {
-            _dataAccess = dataAccess;
-            _fileManager = fileManager;
-        }
+    public async Task<Announcement?> GetById(Guid id)
+    {
+        return await _dataAccess.QuerySingle<dynamic, Announcement>("SP_Announcements_getById",
+            new { Id = id });
+    }
 
-        public async Task<AnnouncementModel?> GetById(Guid id)
-        {
-            return await _dataAccess.QuerySingle<dynamic, AnnouncementModel>("SP_Announcements_getById", 
-                new {Id = id});
-        }
+    public async Task<IEnumerable<AnnouncementsListElement>> GetByAuthorId(string authorId)
+    {
+        return await _dataAccess.Query<dynamic, AnnouncementsListElement>("SP_Announcements_getByAuthorId",
+            new { AuthorId = authorId });
+    }
 
-        public async Task<IEnumerable<AnnouncementsListElementModel>> GetByAuthorId(string authorId)
-        {
-            return await _dataAccess.Query<dynamic, AnnouncementsListElementModel>("SP_Announcements_getByAuthorId",
-                new { AuthorId = authorId });
-        }
+    public async Task<IEnumerable<AnnouncementsListElement>> GetList(GetAnnouncementsList options)
+    {
+        return await _dataAccess.Query<GetAnnouncementsList, AnnouncementsListElement>("SP_Announcements_getPage",
+            options);
+    }
 
-        public async Task<IEnumerable<AnnouncementsListElementModel>> GetList(ListAnnouncements options)
+    public async Task<int> GetPagesCount(GetAnnouncementsList options)
+    {
+        return await _dataAccess.QuerySingle<dynamic, int>("SP_Announcements_getPagesCount", new
         {
-            return await _dataAccess.Query<ListAnnouncements, AnnouncementsListElementModel>("SP_Announcements_getPage", options);
-        }
+            options.PageSize,
+            options.Title,
+            options.Category
+        });
+    }
 
-        public async Task<int> GetPagesCount(ListAnnouncements options)
+    public async Task<Guid> Add(Announcement announcement, List<IFormFile> pictures)
+    {
+        _dataAccess.StartTransaction();
+        List<string> processedPictures = new();
+
+        try
         {
-            return await _dataAccess.QuerySingle<dynamic, int>("SP_Announcements_getPagesCount", new
+            var announcementId = await _dataAccess.QuerySingleInTransaction<dynamic, Guid>("SP_Announcements_add",
+                new
+                {
+                    announcement.AuthorId,
+                    announcement.Title,
+                    announcement.Description,
+                    announcement.Category,
+                    announcement.CreatedDate,
+                    announcement.ExpiresDate,
+                    announcement.IsActive,
+                    announcement.Price
+                });
+
+            foreach (var picture in pictures)
             {
-                options.PageSize,
-                options.Title,
-                options.Category
-            });
-        }
-
-        public async Task<Guid> Add(AnnouncementModel announcement, List<IFormFile> pictures)
-        {
-            _dataAccess.StartTransaction();
-            var processedPictures = new List<string>();
-
-            try
-            {
-                var announcementId = await _dataAccess.QuerySingleInTransaction<dynamic, Guid>("SP_Announcements_add",
+                var fileName = Guid.NewGuid() + Path.GetExtension(picture.FileName);
+                processedPictures.Add(fileName);
+                var persistFileTask = _fileManager.SaveFile(picture, fileName);
+                var persistDataTask = _dataAccess.ExecuteInTransaction<dynamic>("SP_Pictures_add",
                     new
                     {
-                        announcement.AuthorId,
-                        announcement.Title,
-                        announcement.Description,
-                        announcement.Category,
-                        announcement.CreatedDate,
-                        announcement.ExpiresDate,
-                        announcement.IsActive,
-                        announcement.Price
+                        AnnouncementId = announcementId,
+                        Name = fileName
                     });
-
-                foreach (var picture in pictures)
-                {
-                    var fileName = Guid.NewGuid() + Path.GetExtension(picture.FileName);
-                    processedPictures.Add(fileName);
-                    var persistFileTask = _fileManager.SaveFile(picture, fileName);
-                    var persistDataTask = _dataAccess.ExecuteInTransaction<dynamic>("SP_Pictures_add",
-                        new
-                        {
-                            AnnouncementId = announcementId,
-                            Name = fileName
-                        });
-                    await Task.WhenAll(persistFileTask, persistDataTask);
-                }
-
-                _dataAccess.CommitTransaction();
-
-                return announcementId;
+                await Task.WhenAll(persistFileTask, persistDataTask);
             }
-            catch (Exception)
-            {
-                var deletePictureTasks = new List<Task>();
 
-                foreach (var processedPicture in processedPictures)
-                {
-                    deletePictureTasks.Add(_fileManager.DeleteFile(processedPicture));
-                }
+            _dataAccess.CommitTransaction();
 
-                await Task.WhenAll(deletePictureTasks);
-                _dataAccess.RollbackTransaction();
-                throw;
-            }
+            return announcementId;
         }
-
-        public async Task<int> Update(AnnouncementModel announcement, List<IFormFile> pictures)
+        catch (Exception)
         {
-            var processedPictures = new List<string>();
-            var oldPictures = await _dataAccess.Query<dynamic, PictureModel>("SP_Pictures_getByAnnouncementId",
+            List<Task> deletePictureTasks = new();
+
+            foreach (var processedPicture in processedPictures)
+            {
+                deletePictureTasks.Add(_fileManager.DeleteFile(processedPicture));
+            }
+
+            await Task.WhenAll(deletePictureTasks);
+            _dataAccess.RollbackTransaction();
+            throw;
+        }
+    }
+
+    public async Task<int> Update(Announcement announcement, List<IFormFile> pictures)
+    {
+        List<string> processedPictures = new();
+        var oldPictures = await _dataAccess.Query<dynamic, Picture>(
+            "SP_Pictures_getByAnnouncementId",
+            new
+            {
+                AnnouncementId = announcement.Id
+            });
+
+        _dataAccess.StartTransaction();
+
+        try
+        {
+            var res = await _dataAccess.ExecuteInTransaction("SP_Announcements_update", announcement);
+            await _dataAccess.ExecuteInTransaction<dynamic>("SP_Pictures_deleteByAnnouncementId",
                 new
                 {
                     AnnouncementId = announcement.Id
                 });
 
-            _dataAccess.StartTransaction();
-
-            try
+            foreach (var picture in pictures)
             {
-                var res = await _dataAccess.ExecuteInTransaction<AnnouncementModel>("SP_Announcements_update", announcement);
-                await _dataAccess.ExecuteInTransaction<dynamic>("SP_Pictures_deleteByAnnouncementId",
+                var fileName = Guid.NewGuid() + Path.GetExtension(picture.FileName);
+                processedPictures.Add(fileName);
+                var persistFileTask = _fileManager.SaveFile(picture, fileName);
+                var persistDataTask = _dataAccess.ExecuteInTransaction<dynamic>("SP_Pictures_add",
                     new
                     {
-                        AnnouncementId = announcement.Id
+                        AnnouncementId = announcement.Id,
+                        Name = fileName
                     });
-
-                foreach (var picture in pictures)
-                {
-                    var fileName = Guid.NewGuid() + Path.GetExtension(picture.FileName);
-                    processedPictures.Add(fileName);
-                    var persistFileTask = _fileManager.SaveFile(picture, fileName);
-                    var persistDataTask = _dataAccess.ExecuteInTransaction<dynamic>("SP_Pictures_add",
-                        new
-                        {
-                            AnnouncementId = announcement.Id,
-                            Name = fileName
-                        });
-                    await Task.WhenAll(persistFileTask, persistDataTask);
-                }
-
-                var deleteFileTasks = new List<Task>();
-
-                foreach (var oldPicture in oldPictures)
-                {
-                    Console.WriteLine(oldPicture);
-                    deleteFileTasks.Add(_fileManager.DeleteFile(oldPicture.Name));
-                }
-
-                await Task.WhenAll(deleteFileTasks);
-
-                _dataAccess.CommitTransaction();
-
-                return res;
+                await Task.WhenAll(persistFileTask, persistDataTask);
             }
-            catch (Exception)
+
+            List<Task> deleteFileTasks = new();
+
+            foreach (var oldPicture in oldPictures)
             {
-                var deletePictureTasks = new List<Task>();
-
-                foreach (var processedPicture in processedPictures)
-                {
-                    deletePictureTasks.Add(_fileManager.DeleteFile(processedPicture));
-                }
-
-                await Task.WhenAll(deletePictureTasks);
-                _dataAccess.RollbackTransaction();
-                throw;
+                Console.WriteLine(oldPicture);
+                deleteFileTasks.Add(_fileManager.DeleteFile(oldPicture.Name));
             }
+
+            await Task.WhenAll(deleteFileTasks);
+
+            _dataAccess.CommitTransaction();
+
+            return res;
         }
-
-        public async Task<int> Delete(Guid id)
+        catch (Exception)
         {
-            _dataAccess.StartTransaction();
-            try
+            List<Task> deletePictureTasks = new();
+
+            foreach (var processedPicture in processedPictures)
             {
-                var pictures = await _dataAccess.QueryInTransaction<dynamic, PictureModel>("SP_Pictures_getByAnnouncementId",
-                    new
-                    {
-                        AnnouncementId = id
-                    });
-
-                await _dataAccess.ExecuteInTransaction<dynamic>("SP_Pictures_deleteByAnnouncementId",
-                    new
-                    {
-                        AnnouncementId = id
-                    });
-
-                var res = await _dataAccess.ExecuteInTransaction<dynamic>("SP_Announcements_delete", 
-                    new
-                    {
-                        Id = id
-                    });
-
-                var deleteFileTasks = new List<Task>();
-
-                foreach (var picture in pictures)
-                {
-                    deleteFileTasks.Add(_fileManager.DeleteFile(picture.Name));
-                }
-
-                await Task.WhenAll(deleteFileTasks);
-
-                return res;
+                deletePictureTasks.Add(_fileManager.DeleteFile(processedPicture));
             }
-            catch(Exception)
-            {
-                _dataAccess.RollbackTransaction();
-                throw;
-            }
-        }
 
-        public Task<FileStream?> GetPicture(string fileName)
-        {
-            return _fileManager.LoadFile(fileName);
+            await Task.WhenAll(deletePictureTasks);
+            _dataAccess.RollbackTransaction();
+            throw;
         }
+    }
 
-        public async Task<IEnumerable<string>> GetPicturesNames(Guid announcementId)
+    public async Task<int> Delete(Guid id)
+    {
+        _dataAccess.StartTransaction();
+        try
         {
-            return await _dataAccess.Query<dynamic, string>("SP_Pictures_getByAnnouncementId", 
+            var pictures = await _dataAccess.QueryInTransaction<dynamic, Picture>(
+                "SP_Pictures_getByAnnouncementId",
                 new
                 {
-                    AnnouncementId = announcementId
+                    AnnouncementId = id
                 });
+
+            await _dataAccess.ExecuteInTransaction<dynamic>("SP_Pictures_deleteByAnnouncementId",
+                new
+                {
+                    AnnouncementId = id
+                });
+
+            var res = await _dataAccess.ExecuteInTransaction<dynamic>("SP_Announcements_delete",
+                new
+                {
+                    Id = id
+                });
+
+            List<Task> deleteFileTasks = new();
+
+            foreach (var picture in pictures)
+            {
+                deleteFileTasks.Add(_fileManager.DeleteFile(picture.Name));
+            }
+
+            await Task.WhenAll(deleteFileTasks);
+
+            return res;
         }
+        catch (Exception)
+        {
+            _dataAccess.RollbackTransaction();
+            throw;
+        }
+    }
+
+    public Task<FileStream?> GetPicture(string fileName)
+    {
+        return _fileManager.LoadFile(fileName);
+    }
+
+    public async Task<IEnumerable<string>> GetPicturesNames(Guid announcementId)
+    {
+        return await _dataAccess.Query<dynamic, string>("SP_Pictures_getByAnnouncementId",
+            new
+            {
+                AnnouncementId = announcementId
+            });
     }
 }

@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Authentication.DataAccess;
 
-public class ApplicationDbContext : IdentityDbContext<IdentityUser>
+public class AuthenticationDbContext : IdentityDbContext<IdentityUser>
 {
-    public ApplicationDbContext(DbContextOptions options) : base(options)
+    public AuthenticationDbContext(DbContextOptions options) : base(options)
     {
     }
 }

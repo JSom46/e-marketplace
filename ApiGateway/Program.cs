@@ -1,16 +1,13 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+
 builder.Services.AddOcelot();
 
-builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
+builder.Configuration.AddJsonFile("ocelot.json", false, true);
 
 var app = builder.Build();
 
@@ -18,6 +15,8 @@ app.UseRouting();
 
 app.MapControllers();
 
-await app.UseOcelot();
+app.UseWebSockets();
+
+app.UseOcelot().Wait();
 
 app.Run();

@@ -6,338 +6,381 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 
-namespace Announcements.Controllers
+namespace Announcements.Controllers;
+
+[ApiController]
+[Route("[controller]")]
+public class AnnouncementController : ControllerBase
 {
-    [ApiController]
-    [Route("[controller]")]
-    public class AnnouncementController : ControllerBase
+    private readonly IAnnouncementsDataAccess _announcements;
+
+    public AnnouncementController(IAnnouncementsDataAccess announcements)
     {
-        private readonly IAnnouncementsDataAccess _announcements;
+        _announcements = announcements;
+    }
 
-        public AnnouncementController(IAnnouncementsDataAccess announcements)
+    // returns announcement with specified id.
+    [HttpGet]
+    public async Task<ActionResult<GetAnnouncementResponse>> GetAnnouncementById([FromQuery] Guid id)
+    {
+        try
         {
-            _announcements = announcements;
+            // get searched announcement.
+            var announcement = await _announcements.GetById(id);
+
+            // announcement not found.
+            if (announcement == null)
+            {
+                return NotFound();
+            }
+
+            // get names of pictures associated with announcement.
+            var pictures = await _announcements.GetPicturesNames(id);
+
+            return Ok(new GetAnnouncementResponse
+            {
+                Id = announcement.Id,
+                AuthorId = announcement.AuthorId,
+                Title = announcement.Title,
+                Description = announcement.Description,
+                Category = announcement.Category,
+                CreatedDate = announcement.CreatedDate,
+                ExpiresDate = announcement.ExpiresDate,
+                IsActive = announcement.IsActive,
+                Price = announcement.Price,
+                Pictures = pictures
+            });
         }
-
-        [HttpGet]
-        public async Task<ActionResult<GetAnnouncementResponse>> GetAnnouncementById([FromQuery] Guid id)
+        catch (Exception ex)
         {
-            try
-            {
-                var announcement = await _announcements.GetById(id);
-
-                if (announcement == null)
-                {
-                    return NotFound();
-                }
-
-                var pictures = await _announcements.GetPicturesNames(id);
-
-                return Ok(new GetAnnouncementResponse()
-                {
-                    Id = announcement.Id,
-                    AuthorId = announcement.AuthorId,
-                    Title = announcement.Title,
-                    Description = announcement.Description,
-                    Category = announcement.Category,
-                    CreatedDate = announcement.CreatedDate,
-                    ExpiresDate = announcement.ExpiresDate,
-                    IsActive = announcement.IsActive,
-                    Price = announcement.Price,
-                    Pictures = pictures
-                });
-            }
-            catch (Exception ex)
-            {
-                Console.Write(ex);
-                return StatusCode(500);
-            }
+            Console.Write(ex);
+            return StatusCode(500);
         }
+    }
 
-        [HttpGet]
-        [Authorize]
-        [Route("my")]
-        public async Task<ActionResult<ListAnnouncementsResponse>> GetUsersAnnouncements()
+    // returns announcements added by client.
+    [HttpGet]
+    [Authorize]
+    [Route("my")]
+    public async Task<ActionResult<GetAnnouncementsListResponse>> GetUsersAnnouncements()
+    {
+        try
         {
-            try
+            // get client's id from bearer token.
+            var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            // id not found.
+            if (userId == null)
             {
-                var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-                if (userId == null)
-                {
-                    return Unauthorized("Invalid bearer token");
-                }
-
-                var announcements = await _announcements.GetByAuthorId(userId);
-
-                return Ok(new ListAnnouncementsResponse()
-                {
-                    PagesCount = 1,
-                    Announcements = announcements.Select(e => new ListAnnouncementResponseElement()
-                    {
-                        Id = e.Id,
-                        AuthorId = e.AuthorId,
-                        Title = e.Title,
-                        Category = e.Category,
-                        CreatedDate = e.CreatedDate,
-                        ExpiresDate = e.ExpiresDate,
-                        IsActive = e.IsActive,
-                        Price = e.Price,
-                        Picture = e.PictureName
-                    })
-                });
+                return Unauthorized("Invalid bearer token");
             }
-            catch (Exception ex)
+
+            // get client's announcements.
+            var announcements = await _announcements.GetByAuthorId(userId);
+
+            return Ok(new GetAnnouncementsListResponse
             {
-                Console.Write(ex);
-                return StatusCode(500);
-            }
+                PagesCount = 1,
+                Announcements = announcements.Select(e => new GetAnnouncementsListResponseElement
+                {
+                    Id = e.Id,
+                    AuthorId = e.AuthorId,
+                    Title = e.Title,
+                    Category = e.Category,
+                    CreatedDate = e.CreatedDate,
+                    ExpiresDate = e.ExpiresDate,
+                    IsActive = e.IsActive,
+                    Price = e.Price,
+                    Picture = e.PictureName
+                })
+            });
         }
-
-        [HttpGet]
-        [Route("list")]
-        public async Task<ActionResult<ListAnnouncementsResponse>> GetAnnouncements([FromQuery] ListAnnouncements options)
+        catch (Exception ex)
         {
-            try
+            Console.Write(ex);
+            return StatusCode(500);
+        }
+    }
+
+    // returns list of announcements divided into pages.
+    [HttpGet]
+    [Route("list")]
+    public async Task<ActionResult<GetAnnouncementsListResponse>> GetAnnouncements(
+        [FromQuery] GetAnnouncementsList options)
+    {
+        try
+        {
+            // get total number of pages.
+            var pagesCount = await _announcements.GetPagesCount(options);
+
+            // total number of pages is greater than number of requested page - empty list is returned.
+            if (options.PageNumber > pagesCount)
             {
-                var pagesCount = await _announcements.GetPagesCount(options);
-
-                if (options.PageNumber > pagesCount)
-                {
-                    return Ok(new ListAnnouncementsResponse()
-                    {
-                        PagesCount = pagesCount,
-                        Announcements = new List<ListAnnouncementResponseElement>()
-                    });
-                }
-
-                var announcements = await _announcements.GetList(options);
-
-                return Ok(new ListAnnouncementsResponse()
+                return Ok(new GetAnnouncementsListResponse
                 {
                     PagesCount = pagesCount,
-                    Announcements = announcements.Select(e => new ListAnnouncementResponseElement()
-                    {
-                        Id = e.Id,
-                        AuthorId = e.AuthorId,
-                        Title = e.Title,
-                        Category = e.Category,
-                        CreatedDate = e.CreatedDate,
-                        ExpiresDate = e.ExpiresDate,
-                        IsActive = e.IsActive,
-                        Price = e.Price,
-                        Picture = e.PictureName
-                    })
+                    Announcements = new List<GetAnnouncementsListResponseElement>()
                 });
             }
-            catch (Exception ex)
+
+            // get requested page.
+            var announcements = await _announcements.GetList(options);
+
+            return Ok(new GetAnnouncementsListResponse
             {
-                Console.Write(ex);
-                return StatusCode(500);
+                PagesCount = pagesCount,
+                Announcements = announcements.Select(e => new GetAnnouncementsListResponseElement
+                {
+                    Id = e.Id,
+                    AuthorId = e.AuthorId,
+                    Title = e.Title,
+                    Category = e.Category,
+                    CreatedDate = e.CreatedDate,
+                    ExpiresDate = e.ExpiresDate,
+                    IsActive = e.IsActive,
+                    Price = e.Price,
+                    Picture = e.PictureName
+                })
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.Write(ex);
+            return StatusCode(500);
+        }
+    }
+
+    // creates new announcement.
+    [HttpPost]
+    [Authorize]
+    public async Task<ActionResult<Guid>> AddAnnouncement([FromForm] AddAnnouncement addAnnouncement)
+    {
+        // get client's id from bearer token.
+        var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        // id not found.
+        if (userId == null)
+        {
+            return Unauthorized("Invalid bearer token");
+        }
+
+        // price is negative.
+        if (addAnnouncement.Price < 0)
+        {
+            return BadRequest("Price cannot be negative");
+        }
+
+        // title is too short.
+        if (addAnnouncement.Title.Length < 3)
+        {
+            return BadRequest("Title cannot be shorter than 3 characters");
+        }
+
+        // too many pictures attached.
+        if (addAnnouncement.Pictures.Count > 8)
+        {
+            return BadRequest("Cannot upload more than 8 pictures");
+        }
+
+        foreach (var picture in addAnnouncement.Pictures)
+        {
+            // attached file is not a picture.
+            if (picture.ContentType.ToLower() != "image/jpeg" &&
+                picture.ContentType.ToLower() != "image/png" &&
+                picture.ContentType.ToLower() != "image/gif")
+            {
+                return BadRequest("Cannot upload files that are not images");
+            }
+
+            // picture's size is greater than 5MB.
+            if (picture.Length > 5 * 1024 * 1024)
+            {
+                return BadRequest("Cannot upload files bigger than 5MB");
             }
         }
 
-        [HttpPost]
-        [Authorize]
-        public async Task<ActionResult<Guid>> AddAnnouncement([FromForm] AddAnnouncement addAnnouncement)
+        try
         {
-            var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (userId == null)
+            // save announcement.
+            var announcementId = await _announcements.Add(new Announcement
             {
-                return Unauthorized("Invalid bearer token");
+                Title = addAnnouncement.Title,
+                Description = addAnnouncement.Description,
+                Category = addAnnouncement.Category,
+                Price = addAnnouncement.Price,
+                AuthorId = userId,
+                CreatedDate = DateTimeOffset.Now,
+                ExpiresDate = DateTimeOffset.Now + TimeSpan.FromDays(30),
+                IsActive = true
+            }, addAnnouncement.Pictures);
+
+            return Ok(announcementId);
+        }
+        catch (Exception ex)
+        {
+            Console.Write(ex);
+            return StatusCode(500);
+        }
+    }
+
+    // Updates existing announcement previously created by client.
+    [HttpPut]
+    [Authorize]
+    public async Task<ActionResult> UpdateAnnouncement([FromForm] UpdateAnnouncement updateAnnouncement)
+    {
+        // get client's id from bearer token.
+        var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        // id not found.
+        if (userId == null)
+        {
+            return Unauthorized("Invalid bearer token");
+        }
+
+        // price is negative.
+        if (updateAnnouncement.Price < 0)
+        {
+            return BadRequest("Price cannot be negative");
+        }
+
+        // title is too short.
+        if (updateAnnouncement.Title.Length < 3)
+        {
+            return BadRequest("Title cannot be shorter than 3 characters");
+        }
+
+        // title is too short.
+        if (updateAnnouncement.Pictures.Count > 8)
+        {
+            return BadRequest("Cannot upload more than 8 pictures");
+        }
+
+        foreach (var picture in updateAnnouncement.Pictures)
+        {
+            // attached file is not a picture.
+            if (picture.ContentType.ToLower() != "image/jpeg" &&
+                picture.ContentType.ToLower() != "image/png" &&
+                picture.ContentType.ToLower() != "image/gif")
+            {
+                return BadRequest("Cannot upload files that are not images");
             }
 
-            if (addAnnouncement.Price < 0)
+            // picture's size is greater than 5MB.
+            if (picture.Length > 5 * 1024 * 1024)
             {
-                return BadRequest("Price cannot be negative");
-            }
-
-            if (addAnnouncement.Title.Length < 3)
-            {
-                return BadRequest("Title cannot be shorter than 3 characters");
-            }
-
-            if (addAnnouncement.Pictures.Count > 8)
-            {
-                return BadRequest("Cannot upload more than 8 pictures");
-            }
-
-            foreach (var picture in addAnnouncement.Pictures)
-            {
-                if (picture.ContentType.ToLower() != "image/jpeg" &&
-                    picture.ContentType.ToLower() != "image/png" &&
-                    picture.ContentType.ToLower() != "image/gif")
-                {
-                    return BadRequest("Cannot upload files that are not images");
-                }
-
-                if (picture.Length > 5 * 1024 * 1024)
-                {
-                    return BadRequest("Cannot upload files bigger than 5MB");
-                }
-            }
-
-            try
-            {
-                var announcementId = await _announcements.Add(new AnnouncementModel()
-                {
-                    Title = addAnnouncement.Title,
-                    Description = addAnnouncement.Description,
-                    Category = addAnnouncement.Category,
-                    Price = addAnnouncement.Price,
-                    AuthorId = userId,
-                    CreatedDate = DateTimeOffset.Now,
-                    ExpiresDate = DateTimeOffset.Now + TimeSpan.FromDays(30),
-                    IsActive = true
-                }, addAnnouncement.Pictures);
-
-                return Ok(announcementId);
-            }
-            catch (Exception ex)
-            {
-                Console.Write(ex);
-                return StatusCode(500);
+                return BadRequest("Cannot upload files bigger than 5MB");
             }
         }
 
-        [HttpPut]
-        [Authorize]
-        public async Task<ActionResult> UpdateAnnouncement([FromForm] UpdateAnnouncement updateAnnouncement)
+        try
         {
-            var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            // get announcement to be updated.
+            var announcement = await _announcements.GetById(updateAnnouncement.Id);
 
-            if (userId == null)
+            // announcement not found.
+            if (announcement == null)
             {
-                return Unauthorized("Invalid bearer token");
+                return NotFound();
             }
 
-            if (updateAnnouncement.Price < 0)
+            // client is not the author of this announcement.
+            if (announcement.AuthorId != userId)
             {
-                return BadRequest("Price cannot be negative");
+                return Unauthorized("Users Id doesn't match author's Id");
             }
 
-            if (updateAnnouncement.Title.Length < 3)
+            // update announcement.
+            await _announcements.Update(new Announcement
             {
-                return BadRequest("Title cannot be shorter than 3 characters");
-            }
+                Id = updateAnnouncement.Id,
+                Title = updateAnnouncement.Title,
+                Description = updateAnnouncement.Description,
+                Category = updateAnnouncement.Category,
+                Price = updateAnnouncement.Price,
+                AuthorId = announcement.AuthorId,
+                CreatedDate = announcement.CreatedDate,
+                ExpiresDate = announcement.ExpiresDate,
+                IsActive = announcement.IsActive
+            }, updateAnnouncement.Pictures);
 
-            if (updateAnnouncement.Pictures.Count > 8)
-            {
-                return BadRequest("Cannot upload more than 8 pictures");
-            }
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            Console.Write(ex);
+            return StatusCode(500);
+        }
+    }
 
-            foreach (var picture in updateAnnouncement.Pictures)
-            {
-                if (picture.ContentType.ToLower() != "image/jpeg" &&
-                    picture.ContentType.ToLower() != "image/png" &&
-                    picture.ContentType.ToLower() != "image/gif")
-                {
-                    return BadRequest("Cannot upload files that are not images");
-                }
+    // deletes announcement previously created by client.
+    [HttpDelete]
+    [Authorize]
+    public async Task<ActionResult> DeleteAnnouncement([FromBody] Guid id)
+    {
+        // get client's id from bearer token.
+        var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-                if (picture.Length > 5 * 1024 * 1024)
-                {
-                    return BadRequest("Cannot upload files bigger than 5MB");
-                }
-            }
-
-            try
-            {
-                var announcement = await _announcements.GetById(updateAnnouncement.Id);
-
-                if (announcement == null)
-                {
-                    return NotFound();
-                }
-
-                if (announcement.AuthorId != userId)
-                {
-                    return Unauthorized("Users Id doesn't match author's Id");
-                }
-
-                await _announcements.Update(new AnnouncementModel()
-                {
-                    Id = updateAnnouncement.Id,
-                    Title = updateAnnouncement.Title,
-                    Description = updateAnnouncement.Description,
-                    Category = updateAnnouncement.Category,
-                    Price = updateAnnouncement.Price,
-                    AuthorId = announcement.AuthorId,
-                    CreatedDate = announcement.CreatedDate,
-                    ExpiresDate = announcement.ExpiresDate,
-                    IsActive = announcement.IsActive
-                }, updateAnnouncement.Pictures);
-
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                Console.Write(ex);
-                return StatusCode(500);
-            }
+        // id not found.
+        if (userId == null)
+        {
+            return Unauthorized("Invalid bearer token");
         }
 
-        [HttpDelete]
-        [Authorize]
-        public async Task<ActionResult> DeleteAnnouncement([FromBody] Guid id)
+        try
         {
-            var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            // get announcement to be deleted.
+            var announcement = await _announcements.GetById(id);
 
-            if (userId == null)
+            // announcement not found.
+            if (announcement == null)
             {
-                return Unauthorized("Invalid bearer token");
+                return NotFound();
             }
 
-            try
+            // client is not the author of this announcement.
+            if (announcement.AuthorId != userId)
             {
-                var announcement = await _announcements.GetById(id);
-
-                if (announcement == null)
-                {
-                    return NotFound();
-                }
-
-                if (announcement.AuthorId != userId)
-                {
-                    return Unauthorized("Users Id doesn't match author's Id");
-                }
-
-                await _announcements.Delete(id);
-
-                return Ok();
+                return Unauthorized("Users Id doesn't match author's Id");
             }
-            catch (Exception ex)
-            {
-                Console.Write(ex);
-                return StatusCode(500);
-            }
+
+            // delete announcement.
+            await _announcements.Delete(id);
+
+            return Ok();
         }
-
-        [HttpGet]
-        [Route("Picture")]
-        public async Task<ActionResult> getPicture([FromQuery] string name)
+        catch (Exception ex)
         {
-            try
+            Console.Write(ex);
+            return StatusCode(500);
+        }
+    }
+
+    // returns picture with specified name.
+    [HttpGet]
+    [Route("picture")]
+    public async Task<ActionResult> GetPicture([FromQuery] string name)
+    {
+        try
+        {
+            // load picture.
+            var fileStream = await _announcements.GetPicture(name);
+
+            // picture not found
+            if (fileStream == null)
             {
-                new FileExtensionContentTypeProvider().TryGetContentType(name, out string contentType);
-                contentType ??= "application/octet-stream";
-
-                // Return the image file as a FileStreamResult
-                var fileStream = await _announcements.GetPicture(name);
-
-                if (fileStream == null)
-                {
-                    return NotFound();
-                }
-
-                return File(fileStream, contentType);
+                return NotFound();
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                return StatusCode(500);
-            }
+
+            // get content type.
+            new FileExtensionContentTypeProvider().TryGetContentType(name, out var contentType);
+            contentType ??= "application/octet-stream";
+
+            return File(fileStream, contentType);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            return StatusCode(500);
         }
     }
 }
