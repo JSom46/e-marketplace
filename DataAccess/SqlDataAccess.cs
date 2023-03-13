@@ -14,7 +14,6 @@ public class SqlDataAccess : IDataAccess
     public SqlDataAccess(IConfiguration config)
     {
         _config = config;
-        Console.WriteLine("sqldataaccess created");
     }
 
     public async Task<IEnumerable<U>> Query<T, U>(

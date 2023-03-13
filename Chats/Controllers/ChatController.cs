@@ -24,28 +24,35 @@ public class ChatController : ControllerBase
         _hub = hub;
     }
 
+    // returns chat with specified id.
     [HttpGet]
     public async Task<ActionResult<GetChatResponse>> GetChat(Guid id)
     {
+        // get client's id from bearer token.
         var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
+        // id not found.
         if (userId == null)
         {
             return Unauthorized("Invalid bearer token");
         }
 
+        // get searched chat.
         var chat = await _chats.GetById(id, true, true);
 
+        // chat not found.
         if (chat == null)
         {
             return NotFound();
         }
 
+        // client does not participate in this chat.
         if (userId != chat.AuthorId && userId != chat.Announcement.AuthorId)
         {
             return Unauthorized("Cannot access chat you're not part of");
         }
 
+        // marked other user's messages as received.
         var receivedMessagesIds = new List<Guid>();
 
         foreach (var message in chat.Messages)
@@ -57,6 +64,7 @@ public class ChatController : ControllerBase
             }
         }
 
+        // send information about received messages.
         if (receivedMessagesIds.Count > 0)
         {
             await _chats.UpdateMessages(chat.Messages);
@@ -80,18 +88,22 @@ public class ChatController : ControllerBase
         });
     }
 
+    // returns list of chats a client participates in.
     [HttpGet]
     [Route("list")]
     public async Task<ActionResult<GetChatsListResponse>> GetChatsList()
     {
+        // get client's id from bearer token.
         var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
+        // id not found.
         if (userId == null)
         {
             return Unauthorized("Invalid bearer token");
         }
 
-        var chats = await _chats.GetByAuthorId(userId);
+        // get searched chats.
+        var chats = await _chats.GetByUserId(userId);
 
         return Ok(new GetChatsListResponse()
         {
@@ -104,29 +116,36 @@ public class ChatController : ControllerBase
         });
     }
 
+    // returns message with specified id.
     [HttpGet]
     [Route("message")]
     public async Task<ActionResult<GetMessageResponse>> GetMessage(Guid id)
     {
+        // get client's id from bearer token.
         var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
+        // id not found.
         if (userId == null)
         {
             return Unauthorized("Invalid bearer token");
         }
 
+        // get searched message.
         var message = await _chats.GetMessageById(id);
 
+        // message not found.
         if (message == null)
         {
             return NotFound();
         }
 
+        // searched message belong to a chat the client does not participate in.
         if (userId != message.Chat.AuthorId && userId != message.Chat.Announcement.AuthorId)
         {
             return Unauthorized("Cannot access chat you're not part of");
         }
 
+        // if it's message from other user, mark it as received and send notification.
         if (userId != message.AuthorId && !message.Received)
         {
             message.Received = true;
@@ -145,22 +164,25 @@ public class ChatController : ControllerBase
         });
     }
 
+    // returns file with specified name.
     [HttpGet]
     [Route("attachment")]
     public async Task<ActionResult> GetAttachment([FromQuery] string name)
     {
         try
         {
-            new FileExtensionContentTypeProvider().TryGetContentType(name, out var contentType);
-            contentType ??= "application/octet-stream";
-
-            // Return the image file as a FileStreamResult
+            // load file.
             var fileStream = await _chats.GetMessageAttachmentByName(name);
 
+            // file not found.
             if (fileStream == null)
             {
                 return NotFound();
             }
+
+            // get content type of attachment.
+            new FileExtensionContentTypeProvider().TryGetContentType(name, out var contentType);
+            contentType ??= "application/octet-stream";
 
             return File(fileStream, contentType);
         }
@@ -171,28 +193,35 @@ public class ChatController : ControllerBase
         }
     }
 
+    // create new chat.
     [HttpPost]
     public async Task<ActionResult<Guid>> CreateChat([FromBody] AddChat chat)
     {
+        // get client's id from bearer token.
         var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
+        // id not found.
         if (userId == null)
         {
             return Unauthorized("Invalid bearer token");
         }
 
+        // get announcement associated with chat.
         var announcement = await _chats.GetAnnouncementById(chat.AnnouncementId);
 
+        // announcement not found.
         if (announcement == null)
         {
             return BadRequest("Announcement with specified id does not exist");
         }
 
+        // chat's author and announcement's author is same user.
         if (announcement.AuthorId == userId)
         {
             return BadRequest("Cannot create chat with yourself.");
         }
 
+        // client already created chat associated with this announcement.
         if (await _chats.Exists(chat.AnnouncementId, userId))
         {
             return BadRequest("Cannot create multiple chats for the same announcement");
@@ -205,29 +234,36 @@ public class ChatController : ControllerBase
         });
     }
 
+    // create new message
     [HttpPost]
     [Route("message")]
     public async Task<ActionResult> AddMessage([FromForm] AddMessage message)
     {
+        // get client's id from bearer token.
         var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
+        // id not found.
         if (userId == null)
         {
             return Unauthorized("Invalid bearer token");
         }
 
+        // get chat associated with message.
         var chat = await _chats.GetById(message.ChatId, true);
 
+        // chat not found.
         if (chat == null)
         {
             return NotFound("Chat with specified Id was not found");
         }
 
+        // client does not participate in this chat.
         if (userId != chat.AuthorId && userId != chat.Announcement.AuthorId)
         {
             return Unauthorized("Cannot access chat you're not part of");
         }
 
+        // save message.
         var addedMessageId = await _chats.AddMessage(new Message
         {
             AuthorId = userId,
@@ -237,6 +273,7 @@ public class ChatController : ControllerBase
             Received = false
         }, message.Attachments);
 
+        // inform about new message
         await _hub.Clients.Group(chat.Id.ToString()).NewMessage(addedMessageId);
 
         return Ok(addedMessageId);

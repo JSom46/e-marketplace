@@ -23,15 +23,11 @@ public class AuthController : ControllerBase
         _userManager = userManager;
     }
 
+    // create new account
     [HttpPost]
     [Route("register")]
     public async Task<IActionResult> Register([FromBody] Register userData)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest();
-        }
-
         IdentityUser identityUser = new() { UserName = userData.UserName, Email = userData.Email };
         var result = await _userManager.CreateAsync(identityUser, userData.Password);
 
@@ -50,35 +46,37 @@ public class AuthController : ControllerBase
         return Ok();
     }
 
+    // logs in to existing account
     [HttpPost]
     [Route("login")]
     public async Task<IActionResult> Login([FromBody] Login userData)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest();
-        }
-
+        // get user
         var user = await _userManager.FindByNameAsync(userData.UserName);
 
+        // user does not exist
         if (user == null)
         {
             return NotFound();
         }
 
+        // incorrect password
         if (_userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, userData.Password) ==
             PasswordVerificationResult.Failed)
         {
             return Unauthorized();
         }
 
+        // generate token
         var token = GenerateToken(user);
+
         return Ok(new { Token = token });
     }
 
+    // generates jwt token
     private string GenerateToken(IdentityUser identityUser)
     {
-        JwtSecurityTokenHandler tokenHandler = new();
+        var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(_jwtBearerTokenSettings.SecretKey);
 
         var tokenDescriptor = new SecurityTokenDescriptor
@@ -91,8 +89,8 @@ public class AuthController : ControllerBase
             }),
 
             Expires = DateTime.UtcNow.AddSeconds(_jwtBearerTokenSettings.ExpiryTimeInSeconds),
-            SigningCredentials =
-                new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), 
+                SecurityAlgorithms.HmacSha256Signature),
             Audience = _jwtBearerTokenSettings.Audience,
             Issuer = _jwtBearerTokenSettings.Issuer
         };

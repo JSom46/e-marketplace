@@ -44,7 +44,7 @@ public class ChatsDataAccess : IChatsDataAccess
         return await _db.Chats.FirstOrDefaultAsync(c => c.Id == id);
     }
 
-    public async Task<IEnumerable<Chat>> GetByAuthorId(string authorId, bool includeMessages = false)
+    public async Task<IEnumerable<Chat>> GetByUserId(string userId, bool includeMessages = false)
     {
         if (includeMessages)
         {
@@ -52,13 +52,13 @@ public class ChatsDataAccess : IChatsDataAccess
                 .Include(c => c.Announcement)
                 .Include(c => c.Messages)
                 .ThenInclude(m => m.MessageAttachments)
-                .Where(c => c.AuthorId == authorId || c.Announcement.AuthorId == authorId)
+                .Where(c => c.AuthorId == userId || c.Announcement.AuthorId == userId)
                 .ToListAsync();
         }
 
         return await _db.Chats
             .Include(c => c.Announcement)
-            .Where(c => c.AuthorId == authorId || c.Announcement.AuthorId == authorId)
+            .Where(c => c.AuthorId == userId || c.Announcement.AuthorId == userId)
             .ToListAsync();
     }
 
