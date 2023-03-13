@@ -122,7 +122,7 @@ public class AnnouncementController : ControllerBase
                     Announcements = new List<GetAnnouncementsListResponseElement>()
                 });
             }
-            
+
             // get requested page.
             var announcements = await _announcements.GetList(options);
 

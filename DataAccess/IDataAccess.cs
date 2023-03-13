@@ -3,21 +3,21 @@
 public interface IDataAccess
 {
     /// <summary>
-    /// Query a database for a list of items using specified stored procedure.
+    ///     Query a database for a list of items using specified stored procedure.
     /// </summary>
     /// <typeparam name="T">Type of data to be passed to stored procedure.</typeparam>
     /// <typeparam name="U">Type of data to be returned.</typeparam>
     /// <param name="storedProcedure">Name of a stored procedure to run.</param>
     /// <param name="parameters">Parameters to pass to the procedure.</param>
     /// <param name="connectionId">Name of a connection string to use.</param>
-    /// <returns>An <seealso cref="IEnumerable{U}"/> of objects returned by database query.</returns>
+    /// <returns>An <seealso cref="IEnumerable{U}" /> of objects returned by database query.</returns>
     Task<IEnumerable<U>> Query<T, U>(
         string storedProcedure,
         T parameters,
         string connectionId = "Default");
 
     /// <summary>
-    /// Query a database for a single item using specified stored procedure.
+    ///     Query a database for a single item using specified stored procedure.
     /// </summary>
     /// <typeparam name="T">Type of data to be passed to stored procedure.</typeparam>
     /// <typeparam name="U">Type of data to be returned.</typeparam>
@@ -31,7 +31,7 @@ public interface IDataAccess
         string connectionId = "Default");
 
     /// <summary>
-    /// Executes a database non-query procedure
+    ///     Executes a database non-query procedure
     /// </summary>
     /// <typeparam name="T">Type of data to be passed to stored procedure.</typeparam>
     /// <param name="storedProcedure">Name of a stored procedure to run.</param>
@@ -44,24 +44,24 @@ public interface IDataAccess
         string connectionId = "Default");
 
     /// <summary>
-    /// Starts a new transaction.
+    ///     Starts a new transaction.
     /// </summary>
     /// <param name="connectionId">Name of a connection string to use.</param>
     void StartTransaction(string connectionId = "Default");
 
     /// <summary>
-    /// Commits currently running transaction. If there's no running transaction, does nothing.
+    ///     Commits currently running transaction. If there's no running transaction, does nothing.
     /// </summary>
     void CommitTransaction();
 
     /// <summary>
-    /// Rollbacks currently running transaction. If there's no running transaction, does nothing.
+    ///     Rollbacks currently running transaction. If there's no running transaction, does nothing.
     /// </summary>
     void RollbackTransaction();
 
     /// <summary>
-    /// Query a database for a list of items using specified stored procedure. Uses transaction.
-    /// If there's no currently running transaction, <seealso cref="NullReferenceException"/> is thrown.
+    ///     Query a database for a list of items using specified stored procedure. Uses transaction.
+    ///     If there's no currently running transaction, <seealso cref="NullReferenceException" /> is thrown.
     /// </summary>
     /// <exception cref="NullReferenceException"></exception>
     /// <typeparam name="T">Type of data to be passed to stored procedure.</typeparam>
@@ -75,8 +75,8 @@ public interface IDataAccess
         T parameters);
 
     /// <summary>
-    /// Query a database for a single item using specified stored procedure. Uses transaction.
-    /// If there's no currently running transaction, <seealso cref="NullReferenceException"/> is thrown.
+    ///     Query a database for a single item using specified stored procedure. Uses transaction.
+    ///     If there's no currently running transaction, <seealso cref="NullReferenceException" /> is thrown.
     /// </summary>
     /// <exception cref="NullReferenceException"></exception>
     /// <typeparam name="T">Type of data to be passed to stored procedure.</typeparam>
@@ -90,8 +90,8 @@ public interface IDataAccess
         T parameters);
 
     /// <summary>
-    /// Executes a database non-query procedure. Uses transaction.
-    /// If there's no currently running transaction, <seealso cref="NullReferenceException"/> is thrown.
+    ///     Executes a database non-query procedure. Uses transaction.
+    ///     If there's no currently running transaction, <seealso cref="NullReferenceException" /> is thrown.
     /// </summary>
     /// <exception cref="NullReferenceException"></exception>
     /// <typeparam name="T">Type of data to be passed to stored procedure.</typeparam>

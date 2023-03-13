@@ -89,7 +89,7 @@ public class AuthController : ControllerBase
             }),
 
             Expires = DateTime.UtcNow.AddSeconds(_jwtBearerTokenSettings.ExpiryTimeInSeconds),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), 
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
                 SecurityAlgorithms.HmacSha256Signature),
             Audience = _jwtBearerTokenSettings.Audience,
             Issuer = _jwtBearerTokenSettings.Issuer

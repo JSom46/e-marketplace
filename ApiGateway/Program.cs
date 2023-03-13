@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.WebSockets;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 
