@@ -137,4 +137,28 @@ public class ChatsDataAccess : IChatsDataAccess
     {
         return _files.LoadFile(name);
     }
+
+    public async Task DeleteChat(Guid id)
+    {
+        // get chat to be deleted together with associated messages and their attachments.
+        var chat = await _db.Chats
+            .Include(c => c.Messages)
+            .ThenInclude(m => m.MessageAttachments)
+            .FirstOrDefaultAsync(c => c.Id == id);
+
+        // remove attached files.
+        foreach (var message in chat.Messages)
+        {
+            foreach (var attachment in message.MessageAttachments)
+            {
+                await _files.DeleteFile(attachment.Name);
+            }
+        }
+
+        // remove chat from database.
+        _db.Chats.Remove(chat);
+
+        // save changes.
+        await _db.SaveChangesAsync();
+    } 
 }
