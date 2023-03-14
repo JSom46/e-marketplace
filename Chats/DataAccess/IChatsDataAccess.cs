@@ -50,9 +50,9 @@ public interface IChatsDataAccess
     Task<Announcement?> GetAnnouncementById(Guid id);
 
     /// <summary>
-    ///     Finds chat by its id.
+    ///     Finds a message by its id.
     /// </summary>
-    /// <param name="id">Id of searched message.</param>
+    /// <param name="id">Id of the searched message.</param>
     /// <returns>
     ///     A <seealso cref="Message" /> object containing data of searched message or null, if such message does not
     ///     exist.
@@ -68,15 +68,21 @@ public interface IChatsDataAccess
     Task<Guid> AddMessage(Message message, IEnumerable<IFormFile> attachments);
 
     /// <summary>
-    ///     Updates already saved messages.
+    ///     Updates an already saved messages.
     /// </summary>
     /// <param name="messages">List of messages to be updated.</param>
     Task UpdateMessages(IEnumerable<Message> messages);
 
     /// <summary>
-    ///     Finds attachment's file with specified name.
+    ///     Finds an attachment's file with specified name.
     /// </summary>
     /// <param name="name">Name of file to be returned.</param>
     /// <returns>A <seealso cref="FileStream" /> containing searched file or null if such file was not found.</returns>
     Task<FileStream?> GetMessageAttachmentByName(string name);
+
+    /// <summary>
+    ///     Deletes a chat with specified id.
+    /// </summary>
+    /// <param name="id">Id of the chat to be deleted.</param>
+    Task DeleteChat(Guid id);
 }

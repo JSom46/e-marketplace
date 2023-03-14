@@ -234,7 +234,7 @@ public class ChatController : ControllerBase
         });
     }
 
-    // create new message
+    // create new message.
     [HttpPost]
     [Route("message")]
     public async Task<ActionResult> AddMessage([FromForm] AddMessage message)
@@ -277,5 +277,39 @@ public class ChatController : ControllerBase
         await _hub.Clients.Group(chat.Id.ToString()).NewMessage(addedMessageId);
 
         return Ok(addedMessageId);
+    }
+
+    // deletes chat with specified id.
+    [HttpDelete]
+    public async Task<ActionResult> DeleteChat([FromBody] DeleteChat deleteChat)
+    {
+        // get client's id from bearer token.
+        var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        // id not found.
+        if (userId == null)
+        {
+            return Unauthorized("Invalid bearer token");
+        }
+
+        // get chat.
+        var chat = await _chats.GetById(deleteChat.ChatId);
+
+        // chat not found
+        if (chat == null)
+        {
+            return NotFound("Chat with specified Id was not found");
+        }
+
+        // client is not a chat's author.
+        if (chat.AuthorId != userId)
+        {
+            return Unauthorized("Cannot delete someone else's chat");
+        }
+
+        // delete chat
+        await _chats.DeleteChat(deleteChat.ChatId);
+
+        return Ok();
     }
 }
