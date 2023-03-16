@@ -1,6 +1,6 @@
 using Authentication.DataAccess;
-using Configuration.Models;
-using Configuration.Utils;
+using Configuration;
+using Utils;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
