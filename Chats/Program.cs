@@ -1,7 +1,7 @@
 using Chats.DataAccess;
 using Chats.Hubs;
-using Configuration.Models;
-using Configuration.Utils;
+using Configuration;
+using Utils;
 using FileManager;
 using Microsoft.EntityFrameworkCore;
 

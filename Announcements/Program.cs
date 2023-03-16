@@ -1,6 +1,6 @@
 using Announcements.DataAccess;
-using Configuration.Models;
-using Configuration.Utils;
+using Configuration;
+using Utils;
 using DataAccess;
 using FileManager;
 

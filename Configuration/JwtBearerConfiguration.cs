@@ -1,4 +1,4 @@
-﻿namespace Configuration.Models;
+﻿namespace Configuration;
 
 public class JwtBearerConfiguration
 {
