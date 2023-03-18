@@ -11,7 +11,7 @@
         }
       ],
       "UpstreamPathTemplate": "/auth/login",
-      "UpstreamHttpMethod": [ "Post" ],
+      "UpstreamHttpMethod": ["Post"],
 
       "DangerousAcceptAnyServerCertificateValidator": true
     },
@@ -25,7 +25,7 @@
         }
       ],
       "UpstreamPathTemplate": "/auth/register",
-      "UpstreamHttpMethod": [ "Post" ],
+      "UpstreamHttpMethod": ["Post"],
 
       "DangerousAcceptAnyServerCertificateValidator": true
     },
@@ -41,7 +41,7 @@
         }
       ],
       "UpstreamPathTemplate": "/announcement",
-      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
+      "UpstreamHttpMethod": ["Get", "Post", "Put", "Delete"],
 
       "DangerousAcceptAnyServerCertificateValidator": true
     },
@@ -55,7 +55,7 @@
         }
       ],
       "UpstreamPathTemplate": "/announcement/list",
-      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamHttpMethod": ["Get"],
 
       "DangerousAcceptAnyServerCertificateValidator": true
     },
@@ -69,7 +69,7 @@
         }
       ],
       "UpstreamPathTemplate": "/announcement/my",
-      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamHttpMethod": ["Get"],
 
       "DangerousAcceptAnyServerCertificateValidator": true
     },
@@ -83,7 +83,7 @@
         }
       ],
       "UpstreamPathTemplate": "/announcement/picture",
-      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamHttpMethod": ["Get"],
 
       "DangerousAcceptAnyServerCertificateValidator": true
     },
@@ -125,7 +125,7 @@
         }
       ],
       "UpstreamPathTemplate": "/chat",
-      "UpstreamHttpMethod": [ "Get", "Post", "Delete" ],
+      "UpstreamHttpMethod": ["Get", "Post", "Delete"],
 
       "DangerousAcceptAnyServerCertificateValidator": true
     },
@@ -139,7 +139,7 @@
         }
       ],
       "UpstreamPathTemplate": "/chat/message",
-      "UpstreamHttpMethod": [ "Get", "Post" ],
+      "UpstreamHttpMethod": ["Get", "Post"],
 
       "DangerousAcceptAnyServerCertificateValidator": true
     },
@@ -153,7 +153,7 @@
         }
       ],
       "UpstreamPathTemplate": "/chat/attachment",
-      "UpstreamHttpMethod": [ "Get" ],
+      "UpstreamHttpMethod": ["Get"],
 
       "DangerousAcceptAnyServerCertificateValidator": true
     }

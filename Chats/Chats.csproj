@@ -25,6 +25,7 @@
     <ProjectReference Include="..\Configuration\Configuration.csproj" />
     <ProjectReference Include="..\FileManager\FileManager.csproj" />
     <ProjectReference Include="..\Utils\Utils.csproj" />
+    <ProjectReference Include="..\Messenger\Messenger.csproj" />
   </ItemGroup>
 
 </Project>
