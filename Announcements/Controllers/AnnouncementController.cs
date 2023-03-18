@@ -2,6 +2,7 @@
 using Announcements.DataAccess;
 using Announcements.Dtos;
 using Announcements.Models;
+using Messenger;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
@@ -13,10 +14,12 @@ namespace Announcements.Controllers;
 public class AnnouncementController : ControllerBase
 {
     private readonly IAnnouncementsDataAccess _announcements;
+    private readonly IMessageProducer _messenger;
 
-    public AnnouncementController(IAnnouncementsDataAccess announcements)
+    public AnnouncementController(IAnnouncementsDataAccess announcements, IMessageProducer messenger)
     {
         _announcements = announcements;
+        _messenger = messenger;
     }
 
     // returns announcement with specified id.
@@ -345,6 +348,9 @@ public class AnnouncementController : ControllerBase
 
             // delete announcement.
             await _announcements.Delete(id);
+
+            // send message about deleting 
+            _messenger.SendMessage(id);
 
             return Ok();
         }

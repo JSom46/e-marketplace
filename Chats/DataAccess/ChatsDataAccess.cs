@@ -8,6 +8,7 @@ public class ChatsDataAccess : IChatsDataAccess
 {
     private readonly ChatsDbContext _db;
     private readonly IFileManager _files;
+    private readonly object _deleteChatLock = new();
 
     public ChatsDataAccess(ChatsDbContext db, IFileManager files)
     {
@@ -59,6 +60,13 @@ public class ChatsDataAccess : IChatsDataAccess
         return await _db.Chats
             .Include(c => c.Announcement)
             .Where(c => c.AuthorId == userId || c.Announcement.AuthorId == userId)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Chat>> GetByAnnouncementId(Guid announcementId)
+    {
+        return await _db.Chats
+            .Where(c => c.AnnouncementId == announcementId)
             .ToListAsync();
     }
 
@@ -138,13 +146,18 @@ public class ChatsDataAccess : IChatsDataAccess
         return _files.LoadFile(name);
     }
 
-    public async Task DeleteChat(Guid id)
+    public async Task Delete(Guid id)
     {
         // get chat to be deleted together with associated messages and their attachments.
         var chat = await _db.Chats
             .Include(c => c.Messages)
             .ThenInclude(m => m.MessageAttachments)
             .FirstOrDefaultAsync(c => c.Id == id);
+
+        if (chat == null)
+        {
+            return;
+        }
 
         // remove attached files.
         foreach (var message in chat.Messages)

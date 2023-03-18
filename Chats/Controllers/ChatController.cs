@@ -308,7 +308,7 @@ public class ChatController : ControllerBase
         }
 
         // delete chat
-        await _chats.DeleteChat(deleteChat.ChatId);
+        await _chats.Delete(deleteChat.ChatId);
 
         return Ok();
     }

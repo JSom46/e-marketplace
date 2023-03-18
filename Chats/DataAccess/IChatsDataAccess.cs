@@ -25,11 +25,24 @@ public interface IChatsDataAccess
     Task<IEnumerable<Chat>> GetByUserId(string userId, bool includeMessages = false);
 
     /// <summary>
+    ///     Finds chats related to specified announcement
+    /// </summary>
+    /// <param name="announcementId">Id of announcement related to searched chats</param>
+    /// <returns></returns>
+    Task<IEnumerable<Chat>> GetByAnnouncementId(Guid announcementId);
+
+    /// <summary>
     ///     Saves a new chat.
     /// </summary>
     /// <param name="chat">Data of chat to be saved.</param>
     /// <returns>A <seealso cref="Guid" /> assigned to saved chat.</returns>
     Task<Guid> Add(Chat chat);
+
+    /// <summary>
+    ///     Deletes a chat with specified id.
+    /// </summary>
+    /// <param name="id">Id of the chat to be deleted.</param>
+    Task Delete(Guid id);
 
     /// <summary>
     ///     Checks if user with specified Id already created a chat related to announcement with specified id.
@@ -79,10 +92,4 @@ public interface IChatsDataAccess
     /// <param name="name">Name of file to be returned.</param>
     /// <returns>A <seealso cref="FileStream" /> containing searched file or null if such file was not found.</returns>
     Task<FileStream?> GetMessageAttachmentByName(string name);
-
-    /// <summary>
-    ///     Deletes a chat with specified id.
-    /// </summary>
-    /// <param name="id">Id of the chat to be deleted.</param>
-    Task DeleteChat(Guid id);
 }

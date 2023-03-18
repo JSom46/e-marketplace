@@ -1,9 +1,11 @@
 using Chats.DataAccess;
 using Chats.Hubs;
+using Chats.Services;
 using Configuration;
-using Utils;
 using FileManager;
+using Messenger;
 using Microsoft.EntityFrameworkCore;
+using Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +17,8 @@ builder.Services.AddSignalR();
 
 builder.Services.Configure<JwtBearerConfiguration>(builder.Configuration.GetSection("JWT"));
 
+builder.Services.Configure<RabbitMqConfiguration>(builder.Configuration.GetSection("RabbitMQ"));
+
 builder.Services.AddTransient<IFileManager, FsFileManager>();
 
 builder.Services.AddJwtAuthentication(builder.Configuration.GetSection("JWT").Get<JwtBearerConfiguration>());
@@ -25,6 +29,8 @@ builder.Services.AddDbContext<ChatsDbContext>(options =>
 });
 
 builder.Services.AddTransient<IChatsDataAccess, ChatsDataAccess>();
+
+builder.Services.AddHostedService<ChatDeleteMessageConsumer>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

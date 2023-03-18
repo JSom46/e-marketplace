@@ -1,8 +1,9 @@
 using Announcements.DataAccess;
 using Configuration;
-using Utils;
 using DataAccess;
 using FileManager;
+using Messenger;
+using Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +13,11 @@ builder.Services.AddControllers();
 
 builder.Services.Configure<JwtBearerConfiguration>(builder.Configuration.GetSection("JWT"));
 
+builder.Services.Configure<RabbitMqConfiguration>(builder.Configuration.GetSection("RabbitMQ"));
+
 builder.Services.AddJwtAuthentication(builder.Configuration.GetSection("JWT").Get<JwtBearerConfiguration>());
+
+builder.Services.AddSingleton<IMessageProducer, RabbitMqProducer>();
 
 builder.Services.AddTransient<IDataAccess, SqlDataAccess>();
 

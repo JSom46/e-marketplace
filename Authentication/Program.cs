@@ -1,8 +1,8 @@
 using Authentication.DataAccess;
 using Configuration;
-using Utils;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 
