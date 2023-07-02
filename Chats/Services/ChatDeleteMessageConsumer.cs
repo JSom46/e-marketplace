@@ -1,7 +1,5 @@
-﻿using System.Text;
-using System.Text.Json;
+﻿using System.Text.Json;
 using Chats.DataAccess;
-using Chats.Dtos;
 using Messenger;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client.Events;
@@ -43,7 +41,7 @@ public class ChatDeleteMessageConsumer : BaseRabbitMqConsumer
             foreach (var chat in chats)
             {
                 Console.WriteLine($"deleting chat: {chat.Id}");
-                await dataAccess.DeleteChat(chat.Id);
+                await dataAccess.Delete(chat.Id);
             }
 
         }
@@ -53,6 +51,7 @@ public class ChatDeleteMessageConsumer : BaseRabbitMqConsumer
             return;
         }
 
+        // chat deleted
         Channel.BasicAck(e.DeliveryTag, false);
     }
 }
